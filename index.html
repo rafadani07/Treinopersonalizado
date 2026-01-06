@@ -1,0 +1,2474 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aplicação para controle de treinos e nutrição - Treinos do Rafael.">
+  <meta name="theme-color" content="#764ba2">
+  <title>Treinos do Rafael</title>
+  <script defer src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="/_sdk/data_sdk.js"></script>
+  <script defer src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+    
+    * {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .gradient-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .gradient-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    
+    .gradient-danger {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    }
+    
+    .gradient-warning {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .slide-in {
+      animation: slideIn 0.4s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .pulse-glow {
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full w-full overflow-auto bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+  <div class="w-full min-h-full"><!-- Login Screen -->
+   <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+     <div class="text-center mb-8">
+      <div class="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-4 pulse-glow">
+       <svg class="w-10 h-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+       </svg>
+      </div>
+      <h1 id="app-title" class="text-4xl font-bold mb-2">Treinos do Rafael</h1>
+      <p id="welcome-title" class="text-gray-400">Sistema Profissional de Treino e Nutrição</p>
+     </div>
+     <div class="glass-effect rounded-3xl p-8 shadow-2xl">
+      <div class="flex mb-6 bg-white/5 rounded-xl p-1"><button type="button" id="tab-login" class="flex-1 py-2 rounded-lg font-semibold transition-all gradient-primary" aria-label="Abrir aba Login">Login</button> <button type="button" id="tab-register" class="flex-1 py-2 rounded-lg font-semibold transition-all hover:bg-white/10" aria-label="Abrir aba Cadastro">Cadastro</button>
+      </div><!-- Login Form -->
+      <form id="login-form" class="space-y-4">
+       <div><label class="block text-sm font-medium mb-2" for="login-email">E-mail</label> <input type="email" id="login-email" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+       </div>
+       <div><label class="block text-sm font-medium mb-2" for="login-password">Senha</label> <input type="password" id="login-password" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+       </div><button type="submit" class="w-full py-3 gradient-primary rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Entrar </button>
+       <div id="login-message" class="text-sm text-center" aria-live="polite"></div>
+      </form><!-- Register Form -->
+      <form id="register-form" class="hidden space-y-4">
+       <div><label class="block text-sm font-medium mb-2" for="register-name">Nome Completo</label> <input type="text" id="register-name" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+       </div>
+       <div><label class="block text-sm font-medium mb-2" for="register-email">E-mail</label> <input type="email" id="register-email" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+       </div>
+       <div><label class="block text-sm font-medium mb-2" for="register-password">Senha</label> <input type="password" id="register-password" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required minlength="6">
+       </div>
+       <div><label class="block text-sm font-medium mb-2" for="register-confirm">Confirmar Senha</label> <input type="password" id="register-confirm" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required minlength="6">
+       </div><button type="submit" class="w-full py-3 gradient-success rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Criar Conta </button>
+       <div id="register-message" class="text-sm text-center" aria-live="polite"></div>
+      </form>
+     </div>
+    </div>
+   </div><!-- Main App -->
+   <div id="main-app" class="hidden"><!-- Header -->
+    <header class="w-full glass-effect sticky top-0 z-50 shadow-2xl">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between">
+       <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+         </svg>
+        </div>
+        <div>
+         <h1 class="text-xl sm:text-2xl font-bold">Treinos do Rafael</h1>
+         <p id="user-name-header" class="text-xs text-gray-400"></p>
+        </div>
+       </div>
+       <div class="flex items-center space-x-2 sm:space-x-4"><button type="button" id="menu-btn" aria-label="Abrir menu" class="p-2 rounded-xl hover:bg-white/10 transition-colors">
+         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+         </svg></button> <button type="button" id="logout-btn" aria-label="Sair" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl font-semibold text-sm transition-all"> Sair </button>
+       </div>
+      </div>
+     </div>
+    </header><!-- Navigation Menu -->
+    <nav id="nav-menu" class="hidden w-full glass-effect shadow-xl" aria-label="Menu de navegação">
+     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"><button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="dashboard" aria-label="Ir para Dashboard">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg><p class="text-sm font-semibold">Dashboard</p></button> <button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="bioimpedance" aria-label="Ir para Bioimpedância">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg><p class="text-sm font-semibold">Bioimpedância</p></button> <button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="workout" aria-label="Ir para Treinos">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg><p class="text-sm font-semibold">Treinos</p></button> <button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="diet" aria-label="Ir para Dieta">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg><p class="text-sm font-semibold">Dieta</p></button> <button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="goals" aria-label="Ir para Metas">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg><p class="text-sm font-semibold">Metas</p></button> <button type="button" class="nav-item p-4 glass-effect rounded-xl hover:bg-white/10 transition-all" data-screen="water" aria-label="Ir para Água">
+        <svg class="w-6 h-6 mx-auto mb-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg><p class="text-sm font-semibold">Água</p></button>
+      </div>
+     </div>
+    </nav><!-- Content Area -->
+    <main role="main" class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"><!-- Dashboard Screen -->
+     <div id="dashboard-screen" class="space-y-6 fade-in">
+      <div class="flex items-center justify-between mb-6">
+       <h2 id="dashboard-title" class="text-3xl font-bold">Painel de Controle</h2><span id="current-date" class="text-gray-400"></span>
+      </div><!-- Quick Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+       <div class="glass-effect rounded-2xl p-6 border border-purple-500/30 card-hover">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-gray-300">Peso Atual</span>
+         <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+         </svg>
+        </div>
+        <p id="dash-weight" class="text-3xl font-bold">--</p>
+        <p class="text-xs text-gray-400 mt-1">kg</p>
+       </div>
+       <div class="glass-effect rounded-2xl p-6 border border-pink-500/30 card-hover">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-gray-300">Gordura</span>
+         <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+         </svg>
+        </div>
+        <p id="dash-bodyfat" class="text-3xl font-bold">--</p>
+        <p class="text-xs text-gray-400 mt-1">%</p>
+       </div>
+       <div class="glass-effect rounded-2xl p-6 border border-blue-500/30 card-hover">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-gray-300">Músculo</span>
+         <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+         </svg>
+        </div>
+        <p id="dash-muscle" class="text-3xl font-bold">--</p>
+        <p class="text-xs text-gray-400 mt-1">kg</p>
+       </div>
+       <div class="glass-effect rounded-2xl p-6 border border-green-500/30 card-hover">
+        <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium text-gray-300">Calorias Hoje</span>
+         <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+         </svg>
+        </div>
+        <p id="dash-calories" class="text-3xl font-bold">0</p>
+        <p class="text-xs text-gray-400 mt-1">de <span id="dash-goal-calories">0</span></p>
+       </div>
+      </div><!-- Recent Activities -->
+      <div class="glass-effect rounded-2xl p-6">
+       <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">📋 Plano Alimentar Recomendado</h3><button type="button" class="clear-diet-plan px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-semibold transition-all" id="clear-diet-plan-dashboard" aria-label="Limpar plano alimentar"> Limpar Plano </button>
+       </div>
+       <div id="diet-plan-list-dashboard" class="space-y-2" aria-live="polite">
+        <p class="text-gray-400">Nenhum plano alimentar gerado</p>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       <div class="glass-effect rounded-2xl p-6">
+        <h3 class="text-xl font-bold mb-4 flex items-center">
+         <svg class="w-6 h-6 mr-2 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+         </svg> Treino Hoje</h3>
+        <div id="dash-workout-today" class="space-y-2 text-gray-400">
+         Nenhum treino registrado hoje
+        </div>
+       </div>
+       <div class="glass-effect rounded-2xl p-6">
+        <h3 class="text-xl font-bold mb-4 flex items-center">
+         <svg class="w-6 h-6 mr-2 text-pink-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+         </svg> Metas Ativas</h3>
+        <div id="dash-goals" class="space-y-2 text-gray-400">
+         Nenhuma meta cadastrada
+        </div>
+       </div>
+      </div><!-- Evolution Chart -->
+      <div class="glass-effect rounded-2xl p-6">
+       <h3 class="text-xl font-bold mb-4">Evolução Corporal</h3>
+       <canvas id="evolution-chart" style="max-height: 300px;"></canvas>
+      </div>
+     </div><!-- Bioimpedance Screen -->
+     <div id="bioimpedance-screen" class="hidden space-y-6 fade-in">
+      <h2 class="text-3xl font-bold mb-6">Dados de Bioimpedância</h2>
+      <div class="glass-effect rounded-2xl p-6 sm:p-8">
+       <h3 class="text-xl font-bold mb-6">Registrar Nova Medição</h3>
+       <form id="bioimpedance-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div><label class="block text-sm font-medium mb-2" for="bio-weight">Peso (kg)</label> <input type="number" id="bio-weight" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-bodyfat">Gordura Corporal (%)</label> <input type="number" id="bio-bodyfat" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-muscle">Massa Muscular (kg)</label> <input type="number" id="bio-muscle" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-lean">Massa Magra (kg)</label> <input type="number" id="bio-lean" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-bone">Massa Óssea (kg)</label> <input type="number" id="bio-bone" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-tmb">TMB (kcal)</label> <input type="number" id="bio-tmb" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-metage">Idade Metabólica</label> <input type="number" id="bio-metage" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-visceral">Gordura Visceral</label> <input type="number" id="bio-visceral" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="bio-water">Água Corporal (%)</label> <input type="number" id="bio-water" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3"><button type="submit" class="w-full py-3 gradient-primary rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Salvar Medição </button>
+        </div>
+       </form>
+      </div>
+      <div class="glass-effect rounded-2xl p-6">
+       <h3 class="text-xl font-bold mb-4">Histórico de Medições</h3>
+       <div id="bio-history" class="space-y-3">
+        <p class="text-gray-400">Nenhuma medição registrada</p>
+       </div>
+      </div>
+     </div><!-- Workout Screen -->
+     <div id="workout-screen" class="hidden space-y-6 fade-in">
+      <h2 class="text-3xl font-bold mb-6">Gerenciar Treinos</h2><!-- Workout Calendar -->
+      <div class="glass-effect rounded-2xl p-6">
+       <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">📅 Calendário de Treinos</h3>
+        <div class="flex items-center space-x-2"><button type="button" id="prev-month-workout" aria-label="Mês anterior" class="p-2 hover:bg-white/10 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg></button> <span id="current-month-workout" class="font-bold text-lg px-4"></span> <button type="button" id="next-month-workout" aria-label="Próximo mês" class="p-2 hover:bg-white/10 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg></button>
+        </div>
+       </div>
+       <div id="calendar-grid-workout" class="grid grid-cols-7 gap-2"></div>
+      </div>
+      <div class="glass-effect rounded-2xl p-6 sm:p-8">
+       <h3 class="text-xl font-bold mb-6">Adicionar Exercício</h3>
+       <form id="workout-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div><label class="block text-sm font-medium mb-2" for="workout-name">Nome do Treino</label> <input type="text" id="workout-name" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="Ex: Treino A" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="exercise-name">Exercício</label> <input type="text" id="exercise-name" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="Ex: Supino Reto" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="muscle-group">Grupo Muscular</label> <select id="muscle-group" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white bg-slate-900" required> <option value="Peito">Peito</option> <option value="Costas">Costas</option> <option value="Pernas">Pernas</option> <option value="Ombros">Ombros</option> <option value="Bíceps">Bíceps</option> <option value="Tríceps">Tríceps</option> <option value="Abdômen">Abdômen</option> </select>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="sets">Séries</label> <input type="number" id="sets" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="reps">Repetições</label> <input type="text" id="reps" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="Ex: 8-12" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="load">Carga (kg)</label> <input type="number" id="load" step="0.5" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="duration">Duração Total (min)</label> <input type="number" id="duration" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="Ex: 45">
+        </div>
+        <div class="sm:col-span-2 lg:col-span-2"><label class="block text-sm font-medium mb-2" for="exercise-notes">Observações</label> <textarea id="exercise-notes" rows="2" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="T  cnica, ajustes, observações..."></textarea>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3"><button type="submit" class="w-full py-3 gradient-primary rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Adicionar Exercício </button>
+        </div>
+       </form>
+      </div>
+      <div class="glass-effect rounded-2xl p-6">
+       <h3 class="text-xl font-bold mb-4">Meus Treinos</h3>
+       <div id="workout-list" class="space-y-3">
+        <p class="text-gray-400">Nenhum exercício cadastrado</p>
+       </div>
+      </div>
+     </div><!-- Diet Screen -->
+     <div id="diet-screen" class="hidden space-y-6 fade-in">
+      <h2 class="text-3xl font-bold mb-6">Controle Nutricional</h2><!-- Monthly Calendar -->
+      <div class="glass-effect rounded-2xl p-6">
+       <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">📅 Calendário Mensal</h3>
+        <div class="flex items-center space-x-2"><button type="button" id="prev-month" aria-label="Mês anterior" class="p-2 hover:bg-white/10 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg></button> <span id="current-month" class="font-bold text-lg px-4"></span> <button type="button" id="next-month" aria-label="Próximo mês" class="p-2 hover:bg-white/10 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg></button>
+        </div>
+       </div>
+       <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+      </div>
+      <div class="glass-effect rounded-2xl p-6 sm:p-8">
+       <h3 class="text-xl font-bold mb-6">Registrar Refeição</h3>
+       <form id="diet-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div><label class="block text-sm font-medium mb-2" for="food-name">Alimento</label> <input type="text" id="food-name" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" placeholder="Ex: Frango grelhado" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="food-quantity">Quantidade</label> <input type="number" id="food-quantity" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="food-unit">Unidade</label> <select id="food-unit" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white bg-slate-900" required> <option value="g">gramas (g)</option> <option value="ml">mililitros (ml)</option> <option value="un">unidade (un)</option> <option value="col">colher (col)</option> </select>
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="food-calories">Calorias</label> <input type="number" id="food-calories" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white" required>
+        </div>
+        <div class="sm:col-span-2 lg:col-span-4"><button type="submit" class="w-full py-3 gradient-primary rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Registrar Alimento </button>
+        </div>
+       </form>
+      </div>
+      <div class="glass-effect rounded-2xl p-6">
+       <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-bold">📋 Plano Alimentar Recomendado</h3><button type="button" class="clear-diet-plan px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-semibold transition-all" id="clear-diet-plan-diet" aria-label="Limpar plano alimentar"> Limpar Plano </button>
+       </div>
+       <div id="diet-plan-list-diet" class="space-y-2" aria-live="polite">
+        <p class="text-gray-400">Nenhum plano alimentar gerado</p>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       <div class="glass-effect rounded-2xl p-6">
+        <h3 class="text-xl font-bold mb-4">Resumo Diário</h3>
+        <div class="space-y-4">
+         <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl"><span class="font-medium">Calorias Consumidas</span> <span id="total-calories" class="text-2xl font-bold text-green-400">0</span>
+         </div>
+         <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl"><span class="font-medium">Meta Calórica</span> <span id="goal-calories-diet" class="text-2xl font-bold text-purple-400">0</span>
+         </div>
+         <div id="calorie-status" class="p-4 rounded-xl text-center font-semibold"></div>
+        </div>
+       </div>
+       <div class="glass-effect rounded-2xl p-6">
+        <h3 class="text-xl font-bold mb-4">Refeições Hoje</h3>
+        <div id="diet-list" class="space-y-2">
+         <p class="text-gray-400">Nenhuma refeição registrada hoje</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Goals Screen -->
+     <div id="goals-screen" class="hidden space-y-6 fade-in">
+      <h2 class="text-3xl font-bold mb-6">Minhas Metas</h2>
+      <div class="glass-effect rounded-2xl p-6 sm:p-8">
+       <h3 class="text-xl font-bold mb-6">Definir Metas</h3>
+       <form id="goals-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div><label class="block text-sm font-medium mb-2" for="goal-weight">Peso Alvo (kg)</label> <input type="number" id="goal-weight" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="goal-bodyfat">Gordura Alvo (%)</label> <input type="number" id="goal-bodyfat" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="goal-muscle">Músculo Alvo (kg)</label> <input type="number" id="goal-muscle" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="goal-calories-input">Calorias Diárias</label> <input type="number" id="goal-calories-input" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="goal-workouts">Treinos/Semana</label> <input type="number" id="goal-workouts" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div><label class="block text-sm font-medium mb-2" for="goal-water">Água Diária (L)</label> <input type="number" id="goal-water" step="0.1" class="w-full px-4 py-3 glass-effect border border-white/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-white">
+        </div>
+        <div class="sm:col-span-2 lg:col-span-3"><button type="submit" class="w-full py-3 gradient-primary rounded-xl font-bold shadow-xl hover:scale-105 transition-all"> Salvar Metas </button>
+        </div>
+       </form>
+      </div>
+      <div class="glass-effect rounded-2xl p-6">
+       <h3 class="text-xl font-bold mb-4">Status das Metas</h3>
+       <div id="goals-status" class="space-y-3">
+        <p class="text-gray-400">Nenhuma meta definida</p>
+       </div>
+      </div>
+     </div><!-- Water Screen -->
+     <div id="water-screen" class="hidden space-y-6 fade-in">
+      <h2 class="text-3xl font-bold mb-6">Controle de Hidratação</h2>
+      <div class="glass-effect rounded-2xl p-8">
+       <div class="flex items-center justify-between mb-6">
+        <div>
+         <h3 class="text-2xl font-bold">Meta Diária</h3>
+         <p class="text-gray-400">Mantenha-se hidratado</p>
+        </div>
+        <div class="text-right">
+         <p class="text-4xl font-bold"><span id="water-current">0</span>L</p>
+         <p class="text-sm text-gray-400">de <span id="water-goal">0</span>L</p>
+        </div>
+       </div>
+       <div class="relative w-full bg-gray-700/50 rounded-full h-8 overflow-hidden mb-6">
+        <div id="water-progress" class="absolute top-0 left-0 h-full gradient-success transition-all duration-500" style="width: 0%"></div>
+        <div class="absolute inset-0 flex items-center justify-center"><span id="water-percent" class="text-sm font-bold text-white drop-shadow-lg">0%</span>
+        </div>
+       </div>
+       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3"><button class="water-add-btn px-6 py-4 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl font-bold transition-all" data-amount="0.25"> + 250ml </button> <button class="water-add-btn px-6 py-4 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl font-bold transition-all" data-amount="0.5"> + 500ml </button> <button class="water-add-btn px-6 py-4 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl font-bold transition-all" data-amount="1"> + 1L </button> <button id="water-reset-btn" class="px-6 py-4 bg-red-500/20 hover:bg-red-500/30 rounded-xl font-bold transition-all"> Reset </button>
+       </div>
+      </div>
+      <div class="glass-effect rounded-2xl p-6">
+       <h3 class="text-xl font-bold mb-4">Histórico de Hidratação</h3>
+       <div id="water-history" class="space-y-2">
+        <p class="text-gray-400">Nenhum registro hoje</p>
+       </div>
+      </div>
+     </div>
+    </main>
+   </div>
+  </div>
+  <script>
+    // Configuration
+    const defaultConfig = {
+      app_title: "Treinos do Rafael",
+      welcome_title: "Sistema Profissional de Treino e Nutrição",
+      dashboard_title: "Painel de Controle"
+    };
+
+    let currentConfig = { ...defaultConfig };
+    let currentUser = null;
+    let allData = [];
+    let evolutionChart = null;
+    let currentWorkoutLevel = 'intermediario';
+
+    // Show inline message
+    function showMessage(elementId, message, type = 'success') {
+      const element = document.getElementById(elementId);
+      const colors = {
+        success: 'text-green-400',
+        error: 'text-red-400',
+        info: 'text-blue-400'
+      };
+      element.innerHTML = `<p class="${colors[type]} font-semibold">${message}</p>`;
+      setTimeout(() => { element.innerHTML = ''; }, 3000);
+    }
+
+    // Calculate diet plan based on weight and goals
+    function calculateDietPlan(weight, goalCalories) {
+      const proteinGrams = Math.round(weight * 2);
+      const proteinCalories = proteinGrams * 4;
+      
+      const fatCalories = Math.round(goalCalories * 0.27);
+      const fatGrams = Math.round(fatCalories / 9);
+      
+      const carbCalories = goalCalories - proteinCalories - fatCalories;
+      const carbGrams = Math.round(carbCalories / 4);
+      
+      const meals = [
+        { name: 'Café da Manhã', time: '07:00', calories: Math.round(goalCalories * 0.20), protein: Math.round(proteinGrams * 0.20), carbs: Math.round(carbGrams * 0.25), fat: Math.round(fatGrams * 0.20) },
+        { name: 'Lanche da Manhã', time: '10:00', calories: Math.round(goalCalories * 0.10), protein: Math.round(proteinGrams * 0.15), carbs: Math.round(carbGrams * 0.10), fat: Math.round(fatGrams * 0.10) },
+        { name: 'Almoço', time: '13:00', calories: Math.round(goalCalories * 0.30), protein: Math.round(proteinGrams * 0.30), carbs: Math.round(carbGrams * 0.30), fat: Math.round(fatGrams * 0.30) },
+        { name: 'Lanche da Tarde', time: '16:00', calories: Math.round(goalCalories * 0.10), protein: Math.round(proteinGrams * 0.15), carbs: Math.round(carbGrams * 0.10), fat: Math.round(fatGrams * 0.10) },
+        { name: 'Jantar', time: '19:00', calories: Math.round(goalCalories * 0.25), protein: Math.round(proteinGrams * 0.15), carbs: Math.round(carbGrams * 0.20), fat: Math.round(fatGrams * 0.25) },
+        { name: 'Ceia', time: '22:00', calories: Math.round(goalCalories * 0.05), protein: Math.round(proteinGrams * 0.05), carbs: Math.round(carbGrams * 0.05), fat: Math.round(fatGrams * 0.05) }
+      ];
+      
+      return { totalCalories: goalCalories, protein: proteinGrams, carbs: carbGrams, fat: fatGrams, meals };
+    }
+
+    // Auth Functions
+    document.getElementById('tab-login').addEventListener('click', () => {
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('register-form').classList.add('hidden');
+      document.getElementById('tab-login').classList.add('gradient-primary');
+      document.getElementById('tab-register').classList.remove('gradient-primary');
+    });
+
+    document.getElementById('tab-register').addEventListener('click', () => {
+      document.getElementById('register-form').classList.remove('hidden');
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('tab-register').classList.add('gradient-primary');
+      document.getElementById('tab-login').classList.remove('gradient-primary');
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('register-name').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const confirm = document.getElementById('register-confirm').value;
+
+      if (password !== confirm) {
+        showMessage('register-message', 'As senhas não coincidem', 'error');
+        return;
+      }
+
+      const existingUser = allData.find(d => d.type === 'user' && d.email === email);
+      if (existingUser) {
+        showMessage('register-message', 'E-mail já cadastrado', 'error');
+        return;
+      }
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Criando conta...';
+
+      const result = await window.dataSdk.create({
+        id: `user-${Date.now()}`,
+        type: 'user',
+        userId: `user-${Date.now()}`,
+        date: new Date().toISOString(),
+        name,
+        email,
+        password,
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        goalWeight: 0,
+        goalBodyFat: 0,
+        goalMuscleMass: 0,
+        goalCalories: 0,
+        goalWater: 0,
+        goalWorkoutsPerWeek: 0,
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        waterIntake: 0,
+        workoutName: '',
+        completed: false
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Criar Conta';
+
+      if (result.isOk) {
+        showMessage('register-message', 'Conta criada! Faça login.', 'success');
+        setTimeout(() => {
+          document.getElementById('tab-login').click();
+        }, 1500);
+      } else {
+        showMessage('register-message', 'Erro ao criar conta', 'error');
+      }
+    });
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const user = allData.find(d => d.type === 'user' && d.email === email && d.password === password);
+      
+      if (user) {
+        currentUser = user;
+        document.getElementById('user-name-header').textContent = user.name;
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        loadDashboard();
+      } else {
+        showMessage('login-message', 'E-mail ou senha incorretos', 'error');
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentUser = null;
+      document.getElementById('main-app').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+    });
+
+    // Menu Toggle
+    document.getElementById('menu-btn').addEventListener('click', () => {
+      document.getElementById('nav-menu').classList.toggle('hidden');
+    });
+
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const screen = btn.dataset.screen;
+        showScreen(screen + '-screen');
+        document.getElementById('nav-menu').classList.add('hidden');
+      });
+    });
+
+    function showScreen(screenId) {
+      ['dashboard-screen', 'bioimpedance-screen', 'workout-screen', 'diet-screen', 'goals-screen', 'water-screen'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    // Calendar State
+    let currentCalendarDate = new Date();
+    let currentWorkoutCalendarDate = new Date();
+
+    // Render Calendar
+    function renderCalendar() {
+      const year = currentCalendarDate.getFullYear();
+      const month = currentCalendarDate.getMonth();
+      
+      const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      
+      document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
+      
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      const grid = document.getElementById('calendar-grid');
+      grid.innerHTML = '';
+      
+      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      dayNames.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'text-center text-sm font-semibold text-gray-400 p-2';
+        header.textContent = day;
+        grid.appendChild(header);
+      });
+      
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'p-2';
+        grid.appendChild(empty);
+      }
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayDiet = allData.filter(d => d.type === 'diet' && d.userId === currentUser.userId && d.date === dateStr);
+        const dayCalories = dayDiet.reduce((sum, d) => sum + (d.calories || 0), 0);
+        
+        const goalData = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+        const goalCals = goalData?.goalCalories || 0;
+        
+        const isToday = dateStr === todayStr;
+        const hasData = dayDiet.length > 0;
+        const metGoal = hasData && goalCals > 0 && dayCalories >= goalCals;
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = `p-3 rounded-lg text-center cursor-pointer transition-all ${
+          isToday ? 'bg-purple-500/30 border-2 border-purple-400' : 
+          hasData ? (metGoal ? 'bg-green-500/20 hover:bg-green-500/30' : 'bg-blue-500/20 hover:bg-blue-500/30') : 
+          'bg-white/5 hover:bg-white/10'
+        }`;
+        
+        dayCell.innerHTML = `
+          <div class="font-bold text-lg">${day}</div>
+          ${hasData ? `<div class="text-xs mt-1">${dayCalories} kcal</div>` : ''}
+          ${metGoal ? '<div class="text-xs">✅</div>' : ''}
+        `;
+        
+        dayCell.addEventListener('click', () => {
+          showDayDetails(dateStr, dayDiet, goalCals);
+        });
+        
+        grid.appendChild(dayCell);
+      }
+    }
+
+    function showDayDetails(dateStr, meals, goalCals) {
+      const totalCals = meals.reduce((sum, d) => sum + (d.calories || 0), 0);
+      const date = new Date(dateStr + 'T00:00:00');
+      const formattedDate = date.toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold">${formattedDate}</h3>
+            <button class="close-day-modal p-2 hover:bg-white/10 rounded-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="p-4 ${totalCals >= goalCals ? 'bg-green-500/20' : 'bg-blue-500/20'} rounded-xl">
+                <p class="text-sm text-gray-300">Calorias Consumidas</p>
+                <p class="text-3xl font-bold">${totalCals}</p>
+              </div>
+              <div class="p-4 bg-purple-500/20 rounded-xl">
+                <p class="text-sm text-gray-300">Meta Diária</p>
+                <p class="text-3xl font-bold">${goalCals || 0}</p>
+              </div>
+            </div>
+            
+            ${meals.length > 0 ? `
+              <div>
+                <h4 class="font-bold text-lg mb-3">Refeições do Dia</h4>
+                <div class="space-y-2">
+                  ${meals.map(meal => `
+                    <div class="p-3 bg-white/5 rounded-lg">
+                      <p class="font-semibold">${meal.foodName}</p>
+                      <p class="text-sm text-gray-400">${meal.quantity}${meal.unit} • ${meal.calories} kcal</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : `
+              <p class="text-gray-400 text-center py-4">Nenhuma refeição registrada neste dia</p>
+            `}
+            
+            <button class="close-day-modal w-full py-3 bg-purple-500/20 hover:bg-purple-500/30 rounded-xl font-bold transition-all">
+              Fechar
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      modal.querySelectorAll('.close-day-modal').forEach(btn => {
+        btn.addEventListener('click', () => modal.remove());
+      });
+    }
+
+    document.getElementById('prev-month')?.addEventListener('click', () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    document.getElementById('next-month')?.addEventListener('click', () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+      renderCalendar();
+    });
+    
+    document.getElementById('prev-month-workout')?.addEventListener('click', () => {
+      currentWorkoutCalendarDate.setMonth(currentWorkoutCalendarDate.getMonth() - 1);
+      renderWorkoutCalendar();
+    });
+
+    document.getElementById('next-month-workout')?.addEventListener('click', () => {
+      currentWorkoutCalendarDate.setMonth(currentWorkoutCalendarDate.getMonth() + 1);
+      renderWorkoutCalendar();
+    });
+    
+    // Render Workout Calendar
+    function renderWorkoutCalendar() {
+      const year = currentWorkoutCalendarDate.getFullYear();
+      const month = currentWorkoutCalendarDate.getMonth();
+      
+      const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                          'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      
+      document.getElementById('current-month-workout').textContent = `${monthNames[month]} ${year}`;
+      
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      const grid = document.getElementById('calendar-grid-workout');
+      grid.innerHTML = '';
+      
+      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      dayNames.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'text-center text-sm font-semibold text-gray-400 p-2';
+        header.textContent = day;
+        grid.appendChild(header);
+      });
+      
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'p-2';
+        grid.appendChild(empty);
+      }
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayWorkouts = allData.filter(d => d.type === 'workout' && d.userId === currentUser.userId && d.date.startsWith(dateStr));
+        
+        const isToday = dateStr === todayStr;
+        const hasData = dayWorkouts.length > 0;
+        
+        const dayCell = document.createElement('div');
+        dayCell.className = `p-3 rounded-lg text-center cursor-pointer transition-all ${
+          isToday ? 'bg-purple-500/30 border-2 border-purple-400' : 
+          hasData ? 'bg-green-500/20 hover:bg-green-500/30' : 
+          'bg-white/5 hover:bg-white/10'
+        }`;
+        
+        dayCell.innerHTML = `
+          <div class="font-bold text-lg">${day}</div>
+          ${hasData ? `<div class="text-xs mt-1">${dayWorkouts.length} treino${dayWorkouts.length > 1 ? 's' : ''}</div>` : ''}
+          ${hasData ? '<div class="text-xs">💪</div>' : ''}
+        `;
+        
+        dayCell.addEventListener('click', () => {
+          showWorkoutDayDetails(dateStr, dayWorkouts);
+        });
+        
+        grid.appendChild(dayCell);
+      }
+    }
+    
+    function showWorkoutDayDetails(dateStr, workouts) {
+      const date = new Date(dateStr + 'T00:00:00');
+      const formattedDate = date.toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold">${formattedDate}</h3>
+            <button class="close-workout-day-modal p-2 hover:bg-white/10 rounded-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            ${workouts.length > 0 ? `
+              <div>
+                <h4 class="font-bold text-lg mb-3">Treinos do Dia</h4>
+                <div class="space-y-2">
+                  ${workouts.map(w => `
+                    <div class="p-4 bg-white/5 rounded-lg">
+                      <p class="font-semibold text-purple-400">${w.workoutName || 'Treino'}</p>
+                      <p class="font-semibold mt-1">${w.exerciseName}</p>
+                      <p class="text-sm text-gray-400">${w.muscleGroup} • ${w.sets}x${w.reps} • ${w.load}kg${w.duration > 0 ? ` • ${w.duration}min` : ''}</p>
+                      ${w.notes ? `<p class="text-xs text-gray-500 mt-1">${w.notes}</p>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : `
+              <p class="text-gray-400 text-center py-4">Nenhum treino registrado neste dia</p>
+            `}
+            
+            <button class="close-workout-day-modal w-full py-3 bg-purple-500/20 hover:bg-purple-500/30 rounded-xl font-bold transition-all">
+              Fechar
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      modal.querySelectorAll('.close-workout-day-modal').forEach(btn => {
+        btn.addEventListener('click', () => modal.remove());
+      });
+    }
+
+    // Calculate recommendations based on bioimpedance
+    function calculateRecommendations(bioData) {
+      const weight = bioData.weight;
+      const bodyFat = bioData.bodyFat;
+      const muscleMass = bioData.muscleMass;
+      const tmb = bioData.tmb;
+      
+      let profile = '';
+      let goalWeight = weight;
+      let goalBodyFat = bodyFat;
+      let goalMuscleMass = muscleMass;
+      let goalCalories = tmb;
+      let goalWorkouts = 3;
+      let goalWater = 2.5;
+      
+      if (bodyFat > 25) {
+        profile = 'Perda de Gordura';
+        goalBodyFat = bodyFat * 0.85;
+        goalWeight = weight * 0.93;
+        goalMuscleMass = muscleMass * 1.05;
+        goalCalories = Math.round(tmb * 0.85);
+        goalWorkouts = 5;
+        goalWater = 3.0;
+      } else if (bodyFat < 12) {
+        profile = 'Ganho de Massa';
+        goalBodyFat = bodyFat * 1.1;
+        goalWeight = weight * 1.08;
+        goalMuscleMass = muscleMass * 1.15;
+        goalCalories = Math.round(tmb * 1.15);
+        goalWorkouts = 4;
+        goalWater = 3.5;
+      } else {
+        profile = 'Recomposição Corporal';
+        goalBodyFat = bodyFat * 0.9;
+        goalWeight = weight * 1.02;
+        goalMuscleMass = muscleMass * 1.12;
+        goalCalories = Math.round(tmb * 1.05);
+        goalWorkouts = 4;
+        goalWater = 3.0;
+      }
+      
+      return {
+        profile,
+        goalWeight: Math.round(goalWeight * 10) / 10,
+        goalBodyFat: Math.round(goalBodyFat * 10) / 10,
+        goalMuscleMass: Math.round(goalMuscleMass * 10) / 10,
+        goalCalories,
+        goalWorkouts,
+        goalWater
+      };
+    }
+
+    // Show recommendations modal with diet plan
+    function showRecommendationsModal(recommendations, bioData) {
+      const dietPlan = calculateDietPlan(bioData.weight, recommendations.goalCalories);
+      
+      const modal = document.createElement('div');
+      modal.id = 'recommendations-modal';
+      modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4';
+      modal.innerHTML = `
+        <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold">🎯 Análise e Recomendações</h3>
+            <button id="close-modal" class="p-2 hover:bg-white/10 rounded-lg">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="space-y-6">
+            <div class="p-5 gradient-primary rounded-2xl">
+              <h4 class="font-bold text-xl mb-2">Seu Perfil: ${recommendations.profile}</h4>
+              <p class="text-sm opacity-90">Baseado nos seus dados de bioimpedância</p>
+            </div>
+            
+            <div class="glass-effect rounded-2xl p-5">
+              <h4 class="font-bold text-lg mb-4">📊 Situação Atual</h4>
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <p class="text-gray-400">Peso</p>
+                  <p class="font-bold text-lg">${bioData.weight} kg</p>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <p class="text-gray-400">Gordura</p>
+                  <p class="font-bold text-lg">${bioData.bodyFat}%</p>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <p class="text-gray-400">Músculo</p>
+                  <p class="font-bold text-lg">${bioData.muscleMass} kg</p>
+                </div>
+                <div class="p-3 bg-white/5 rounded-lg">
+                  <p class="text-gray-400">TMB</p>
+                  <p class="font-bold text-lg">${bioData.tmb} kcal</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="glass-effect rounded-2xl p-5">
+              <h4 class="font-bold text-lg mb-4">🎯 Metas Recomendadas</h4>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Peso Alvo</span>
+                  <span class="font-bold text-green-400">${recommendations.goalWeight} kg</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Gordura Alvo</span>
+                  <span class="font-bold text-green-400">${recommendations.goalBodyFat}%</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Músculo Alvo</span>
+                  <span class="font-bold text-green-400">${recommendations.goalMuscleMass} kg</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Calorias Diárias</span>
+                  <span class="font-bold text-green-400">${recommendations.goalCalories} kcal</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Treinos por Semana</span>
+                  <span class="font-bold text-green-400">${recommendations.goalWorkouts}x</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                  <span class="text-gray-300">Água Diária</span>
+                  <span class="font-bold text-green-400">${recommendations.goalWater}L</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="glass-effect rounded-2xl p-5">
+              <h4 class="font-bold text-lg mb-4">🍽️ Plano Alimentar Diário</h4>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="p-3 bg-green-500/20 rounded-lg text-center">
+                  <p class="text-xs text-gray-300">Calorias</p>
+                  <p class="font-bold text-lg">${dietPlan.totalCalories}</p>
+                </div>
+                <div class="p-3 bg-blue-500/20 rounded-lg text-center">
+                  <p class="text-xs text-gray-300">Proteína</p>
+                  <p class="font-bold text-lg">${dietPlan.protein}g</p>
+                </div>
+                <div class="p-3 bg-yellow-500/20 rounded-lg text-center">
+                  <p class="text-xs text-gray-300">Carboidratos</p>
+                  <p class="font-bold text-lg">${dietPlan.carbs}g</p>
+                </div>
+                <div class="p-3 bg-orange-500/20 rounded-lg text-center">
+                  <p class="text-xs text-gray-300">Gorduras</p>
+                  <p class="font-bold text-lg">${dietPlan.fat}g</p>
+                </div>
+              </div>
+              <div class="space-y-2 text-sm">
+                ${dietPlan.meals.map(meal => `
+                  <div class="p-3 bg-white/5 rounded-lg">
+                    <div class="flex items-center justify-between mb-1">
+                      <p class="font-semibold text-purple-400">${meal.name}</p>
+                      <p class="text-gray-400">${meal.time}</p>
+                    </div>
+                    <p class="text-xs text-gray-400">
+                      ${meal.calories} kcal • ${meal.protein}g proteína • ${meal.carbs}g carbs • ${meal.fat}g gordura
+                    </p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div class="glass-effect rounded-2xl p-5">
+              <h4 class="font-bold text-lg mb-4">💪 Escolha seu Nível de Treino</h4>
+              <div class="space-y-3 mb-4">
+                <div class="p-4 ${currentWorkoutLevel === 'basico' ? 'bg-purple-500/30 border-2 border-purple-400' : 'bg-white/5'} rounded-lg cursor-pointer hover:bg-white/10 transition-all" data-level="basico">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-bold">📘 Básico</p>
+                      <p class="text-xs text-gray-400 mt-1">3 dias por semana (Seg, Qua, Sex)</p>
+                      <p class="text-xs text-gray-400">Ideal para iniciantes</p>
+                    </div>
+                    <input type="radio" name="workout_level" value="basico" ${currentWorkoutLevel === 'basico' ? 'checked' : ''} class="w-5 h-5">
+                  </div>
+                </div>
+                <div class="p-4 ${currentWorkoutLevel === 'intermediario' ? 'bg-purple-500/30 border-2 border-purple-400' : 'bg-white/5'} rounded-lg cursor-pointer hover:bg-white/10 transition-all" data-level="intermediario">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-bold">📗 Intermediário</p>
+                      <p class="text-xs text-gray-400 mt-1">4 dias por semana (Seg, Ter, Qui, Sex)</p>
+                      <p class="text-xs text-gray-400">Treino equilibrado</p>
+                    </div>
+                    <input type="radio" name="workout_level" value="intermediario" ${currentWorkoutLevel === 'intermediario' ? 'checked' : ''} class="w-5 h-5">
+                  </div>
+                </div>
+                <div class="p-4 ${currentWorkoutLevel === 'avancado' ? 'bg-purple-500/30 border-2 border-purple-400' : 'bg-white/5'} rounded-lg cursor-pointer hover:bg-white/10 transition-all" data-level="avancado">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-bold">📕 Avançado</p>
+                      <p class="text-xs text-gray-400 mt-1">5 dias por semana (Seg a Sex)</p>
+                      <p class="text-xs text-gray-400">Para praticantes experientes</p>
+                    </div>
+                    <input type="radio" name="workout_level" value="avancado" ${currentWorkoutLevel === 'avancado' ? 'checked' : ''} class="w-5 h-5">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button id="apply-goals" class="flex-1 py-3 gradient-success rounded-xl font-bold shadow-xl hover:scale-105 transition-all">
+                Aplicar Metas e Planos
+              </button>
+              <button id="cancel-modal" class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      // Handle level selection
+      modal.querySelectorAll('[data-level]').forEach(div => {
+        div.addEventListener('click', function() {
+          const level = this.dataset.level;
+          currentWorkoutLevel = level;
+          
+          // Update UI
+          modal.querySelectorAll('[data-level]').forEach(d => {
+            d.className = d.className.replace('bg-purple-500/30 border-2 border-purple-400', 'bg-white/5');
+          });
+          this.className = this.className.replace('bg-white/5', 'bg-purple-500/30 border-2 border-purple-400');
+          
+          // Update radio
+          modal.querySelector(`input[value="${level}"]`).checked = true;
+        });
+      });
+      
+      document.getElementById('close-modal').addEventListener('click', () => modal.remove());
+      document.getElementById('cancel-modal').addEventListener('click', () => modal.remove());
+      document.getElementById('apply-goals').addEventListener('click', async () => {
+        await applyRecommendedGoals(recommendations, dietPlan, bioData);
+        modal.remove();
+        showScreen('goals-screen');
+      });
+    }
+
+    // Apply recommended goals
+    async function applyRecommendedGoals(recommendations, dietPlan, bioData) {
+      const existingGoals = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+      
+      const goalData = {
+        id: existingGoals?.id || `goals-${Date.now()}`,
+        type: 'goals',
+        userId: currentUser.userId,
+        date: new Date().toISOString(),
+        goalWeight: recommendations.goalWeight,
+        goalBodyFat: recommendations.goalBodyFat,
+        goalMuscleMass: recommendations.goalMuscleMass,
+        goalCalories: recommendations.goalCalories,
+        goalWorkoutsPerWeek: recommendations.goalWorkouts,
+        goalWater: recommendations.goalWater,
+        name: '',
+        email: '',
+        password: '',
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        waterIntake: 0,
+        workoutName: '',
+        completed: false
+      };
+
+      if (existingGoals) {
+        await window.dataSdk.update({ ...existingGoals, ...goalData });
+      } else {
+        await window.dataSdk.create(goalData);
+      }
+      
+      // Save diet plan meals
+      for (const meal of dietPlan.meals) {
+        await window.dataSdk.create({
+          id: `diet-plan-${Date.now()}-${Math.random()}`,
+          type: 'diet-plan',
+          userId: currentUser.userId,
+          date: new Date().toISOString(),
+          foodName: `${meal.name} (${meal.time})`,
+          quantity: 1,
+          unit: 'refeição',
+          calories: meal.calories,
+          name: '',
+          email: '',
+          password: '',
+          weight: 0,
+          bodyFat: 0,
+          muscleMass: 0,
+          leanMass: 0,
+          boneMass: 0,
+          tmb: 0,
+          metabolicAge: 0,
+          visceralFat: 0,
+          waterPercent: 0,
+          height: 0,
+          age: 0,
+          gender: '',
+          goalWeight: 0,
+          goalBodyFat: 0,
+          goalMuscleMass: 0,
+          goalCalories: 0,
+          goalWater: 0,
+          goalWorkoutsPerWeek: 0,
+          exerciseName: '',
+          muscleGroup: '',
+          sets: 0,
+          reps: 0,
+          load: 0,
+          duration: 0,
+          notes: `Proteína: ${meal.protein}g | Carboidratos: ${meal.carbs}g | Gorduras: ${meal.fat}g`,
+          waterIntake: 0,
+          workoutName: '',
+          completed: false
+        });
+      }
+      
+      // Save workout plan
+      const workoutPlan = generateWorkoutPlan(recommendations.profile, currentWorkoutLevel);
+      for (const workout of workoutPlan) {
+        await window.dataSdk.create({
+          id: `workout-plan-${Date.now()}-${Math.random()}`,
+          type: 'workout',
+          userId: currentUser.userId,
+          date: new Date().toISOString(),
+          workoutName: workout.name,
+          exerciseName: workout.exercise,
+          muscleGroup: workout.muscleGroup,
+          sets: workout.sets,
+          reps: workout.reps,
+          load: 0,
+          duration: workout.duration,
+          notes: workout.notes,
+          name: '',
+          email: '',
+          password: '',
+          weight: 0,
+          bodyFat: 0,
+          muscleMass: 0,
+          leanMass: 0,
+          boneMass: 0,
+          tmb: 0,
+          metabolicAge: 0,
+          visceralFat: 0,
+          waterPercent: 0,
+          height: 0,
+          age: 0,
+          gender: '',
+          goalWeight: 0,
+          goalBodyFat: 0,
+          goalMuscleMass: 0,
+          goalCalories: 0,
+          goalWater: 0,
+          goalWorkoutsPerWeek: 0,
+          foodName: '',
+          quantity: 0,
+          unit: '',
+          calories: 0,
+          waterIntake: 0,
+          completed: false
+        });
+      }
+    }
+    
+    // Generate workout plan based on profile and level
+    function generateWorkoutPlan(profile, level = 'intermediario') {
+      const schedules = {
+        basico: ['Segunda', 'Quarta', 'Sexta'],
+        intermediario: ['Segunda', 'Terça', 'Quinta', 'Sexta'],
+        avancado: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']
+      };
+      
+      const daysOfWeek = schedules[level] || schedules.intermediario;
+      
+      if (profile === 'Perda de Gordura') {
+        const workouts = {
+          basico: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 40, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado Halteres', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 40, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 40, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 40, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 40, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 40, notes: 'Quarta-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 40, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '12-15', duration: 40, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 40, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 40, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 45, notes: 'Sexta-feira' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Leg Press', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 45, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '15', duration: 45, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 3, reps: '12-15', duration: 45, notes: '' }
+            ]
+          },
+          intermediario: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '10-12', duration: 50, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '15', duration: 50, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '10-12', duration: 50, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Pullover', muscleGroup: 'Costas', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 4, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 50, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 55, notes: 'Quinta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '15', duration: 55, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 3, reps: '15', duration: 55, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 4, reps: '15-20', duration: 55, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 45, notes: 'Sexta-feira' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '12-15', duration: 45, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '12-15', duration: 45, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 3, reps: '12-15', duration: 45, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Abdominal Remador', muscleGroup: 'Abdômen', sets: 4, reps: '15-20', duration: 45, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Prancha', muscleGroup: 'Abdômen', sets: 3, reps: '60seg', duration: 45, notes: '' }
+            ]
+          },
+          avancado: {
+            'Segunda': [
+              { name: 'Treino A - Peito', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 60, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Supino Declinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Reto', muscleGroup: 'Peito', sets: 4, reps: '12-15', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '15', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Pullover', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 60, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas', exercise: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '8-12', duration: 60, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '12/lado', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Pullover', muscleGroup: 'Costas', sets: 3, reps: '12-15', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Levantamento Terra', muscleGroup: 'Costas', sets: 3, reps: '8-10', duration: 60, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 5, reps: '10-12', duration: 70, notes: 'Quarta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Hack Machine', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 4, reps: '15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 4, reps: '15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 4, reps: '15-20', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha Sentado', muscleGroup: 'Pernas', sets: 3, reps: '15-20', duration: 70, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 55, notes: 'Quinta-feira' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 4, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Remada Alta', muscleGroup: 'Ombros', sets: 3, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Encolhimento', muscleGroup: 'Ombros', sets: 4, reps: '12-15', duration: 55, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Direta Barra', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', duration: 50, notes: 'Sexta-feira' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 4, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 4, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '15', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Abdominal Remador', muscleGroup: 'Abdômen', sets: 4, reps: '15-20', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Prancha', muscleGroup: 'Abdômen', sets: 3, reps: '60seg', duration: 50, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Abdominal Canivete', muscleGroup: 'Abdômen', sets: 3, reps: '15-20', duration: 50, notes: '' }
+            ]
+          }
+        };
+        
+        const planLevel = workouts[level];
+        const allExercises = [];
+        daysOfWeek.forEach(day => {
+          if (planLevel[day]) {
+            allExercises.push(...planLevel[day]);
+          }
+        });
+        return allExercises;
+        
+      } else if (profile === 'Ganho de Massa') {
+        const workouts = {
+          basico: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '6-8', duration: 50, notes: 'Segunda-feira - Foco em carga' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '8-10', duration: 50, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '8-10', duration: 50, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '6-10', duration: 50, notes: 'Quarta-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 3, reps: '8-10', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 4, reps: '8-10', duration: 50, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '8-10', duration: 50, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 5, reps: '6-8', duration: 60, notes: 'Sexta-feira' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Leg Press', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 60, notes: '' }
+            ]
+          },
+          intermediario: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '6-8', duration: 60, notes: 'Segunda-feira - Alta intensidade' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Declinado', muscleGroup: 'Peito', sets: 3, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Francês', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 60, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '6-10', duration: 60, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 60, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 5, reps: '6-8', duration: 70, notes: 'Quinta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Hack Machine', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 3, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 4, reps: '12-15', duration: 70, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 55, notes: 'Sexta-feira' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Encolhimento', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 55, notes: '' }
+            ]
+          },
+          avancado: {
+            'Segunda': [
+              { name: 'Treino A - Peito', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 5, reps: '5-6', duration: 70, notes: 'Segunda-feira - Força máxima' },
+              { name: 'Treino A - Peito', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '6-8', duration: 70, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Supino Declinado', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Reto', muscleGroup: 'Peito', sets: 4, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Pullover', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 70, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas', exercise: 'Levantamento Terra', muscleGroup: 'Costas', sets: 5, reps: '5-6', duration: 70, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas', exercise: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '6-8', duration: 70, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '6-8', duration: 70, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 70, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '10/lado', duration: 70, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Pullover', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 70, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 5, reps: '5-6', duration: 80, notes: 'Quarta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 5, reps: '8-10', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Hack Machine', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 5, reps: '12-15', duration: 80, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha Sentado', muscleGroup: 'Pernas', sets: 4, reps: '15-20', duration: 80, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 5, reps: '6-8', duration: 65, notes: 'Quinta-feira' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Remada Alta', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Encolhimento Barra', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 65, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Encolhimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 65, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Rosca Direta Barra', muscleGroup: 'Bíceps', sets: 4, reps: '8-10', duration: 60, notes: 'Sexta-feira' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Rosca Concentrada', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Tríceps Francês', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps', exercise: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 60, notes: '' }
+            ]
+          }
+        };
+        
+        const planLevel = workouts[level];
+        const allExercises = [];
+        daysOfWeek.forEach(day => {
+          if (planLevel[day]) {
+            allExercises.push(...planLevel[day]);
+          }
+        });
+        return allExercises;
+        
+      } else {
+        // Recomposição Corporal
+        const workouts = {
+          basico: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '8-12', duration: 45, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo', muscleGroup: 'Peito', sets: 3, reps: '12', duration: 45, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 45, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '8-12', duration: 45, notes: 'Quarta-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '12', duration: 45, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 45, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 45, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 50, notes: 'Sexta-feira' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Leg Press', muscleGroup: 'Pernas', sets: 3, reps: '12', duration: 50, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 50, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-12', duration: 50, notes: '' },
+              { name: 'Treino C - Pernas/Ombros', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 50, notes: '' }
+            ]
+          },
+          intermediario: {
+            'Segunda': [
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '8-12', duration: 55, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '8-12', duration: 55, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino A - Peito/Tríceps', exercise: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 55, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '8-12', duration: 55, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-12', duration: 55, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Pullover', muscleGroup: 'Costas', sets: 3, reps: '12', duration: 55, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino B - Costas/Bíceps', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12', duration: 55, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 60, notes: 'Quinta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 4, reps: '15-20', duration: 60, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-12', duration: 50, notes: 'Sexta-feira' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 3, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 50, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '12', duration: 50, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 3, reps: '12', duration: 50, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Abdominal Remador', muscleGroup: 'Abdômen', sets: 4, reps: '15-20', duration: 50, notes: '' },
+              { name: 'Treino D - Ombros/Abdômen', exercise: 'Prancha', muscleGroup: 'Abdômen', sets: 3, reps: '60seg', duration: 50, notes: '' }
+            ]
+          },
+          avancado: {
+            'Segunda': [
+              { name: 'Treino A - Peito', exercise: 'Supino Reto', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 60, notes: 'Segunda-feira' },
+              { name: 'Treino A - Peito', exercise: 'Supino Inclinado', muscleGroup: 'Peito', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Supino Declinado', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Reto', muscleGroup: 'Peito', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crucifixo Inclinado', muscleGroup: 'Peito', sets: 3, reps: '12', duration: 60, notes: '' },
+              { name: 'Treino A - Peito', exercise: 'Crossover', muscleGroup: 'Peito', sets: 3, reps: '12-15', duration: 60, notes: '' }
+            ],
+            'Terça': [
+              { name: 'Treino B - Costas', exercise: 'Barra Fixa', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 60, notes: 'Terça-feira' },
+              { name: 'Treino B - Costas', exercise: 'Puxada Frente', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Curvada', muscleGroup: 'Costas', sets: 4, reps: '8-10', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Cavalinho', muscleGroup: 'Costas', sets: 3, reps: '10-12', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Remada Unilateral', muscleGroup: 'Costas', sets: 3, reps: '10/lado', duration: 60, notes: '' },
+              { name: 'Treino B - Costas', exercise: 'Pullover', muscleGroup: 'Costas', sets: 3, reps: '12', duration: 60, notes: '' }
+            ],
+            'Quarta': [
+              { name: 'Treino C - Pernas', exercise: 'Agachamento Livre', muscleGroup: 'Pernas', sets: 4, reps: '8-10', duration: 70, notes: 'Quarta-feira' },
+              { name: 'Treino C - Pernas', exercise: 'Leg Press 45', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Hack Machine', muscleGroup: 'Pernas', sets: 3, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Extensora', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Stiff', muscleGroup: 'Pernas', sets: 4, reps: '10-12', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Cadeira Flexora', muscleGroup: 'Pernas', sets: 3, reps: '12-15', duration: 70, notes: '' },
+              { name: 'Treino C - Pernas', exercise: 'Panturrilha em Pé', muscleGroup: 'Pernas', sets: 4, reps: '15-20', duration: 70, notes: '' }
+            ],
+            'Quinta': [
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Militar', muscleGroup: 'Ombros', sets: 4, reps: '8-10', duration: 55, notes: 'Quinta-feira' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Desenvolvimento Halteres', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Lateral', muscleGroup: 'Ombros', sets: 4, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Elevação Frontal', muscleGroup: 'Ombros', sets: 3, reps: '12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Crucifixo Invertido', muscleGroup: 'Ombros', sets: 3, reps: '12', duration: 55, notes: '' },
+              { name: 'Treino D - Ombros/Trapézio', exercise: 'Encolhimento', muscleGroup: 'Ombros', sets: 4, reps: '12-15', duration: 55, notes: '' }
+            ],
+            'Sexta': [
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Direta', muscleGroup: 'Bíceps', sets: 4, reps: '10-12', duration: 55, notes: 'Sexta-feira' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Alternada', muscleGroup: 'Bíceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Martelo', muscleGroup: 'Bíceps', sets: 3, reps: '12', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Rosca Scott', muscleGroup: 'Bíceps', sets: 3, reps: '12', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Pulley', muscleGroup: 'Tríceps', sets: 4, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Testa', muscleGroup: 'Tríceps', sets: 3, reps: '10-12', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Tríceps Coice', muscleGroup: 'Tríceps', sets: 3, reps: '12-15', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Abdominal Remador', muscleGroup: 'Abdômen', sets: 4, reps: '15-20', duration: 55, notes: '' },
+              { name: 'Treino E - Bíceps/Tríceps/Abdômen', exercise: 'Prancha', muscleGroup: 'Abdômen', sets: 3, reps: '60seg', duration: 55, notes: '' }
+            ]
+          }
+        };
+        
+        const planLevel = workouts[level];
+        const allExercises = [];
+        daysOfWeek.forEach(day => {
+          if (planLevel[day]) {
+            allExercises.push(...planLevel[day]);
+          }
+        });
+        return allExercises;
+      }
+    }
+
+    // Dashboard
+    function loadDashboard() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+
+      const bioData = allData.filter(d => d.type === 'bioimpedance' && d.userId === currentUser.userId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      
+      if (bioData) {
+        document.getElementById('dash-weight').textContent = bioData.weight.toFixed(1);
+        document.getElementById('dash-bodyfat').textContent = bioData.bodyFat.toFixed(1);
+        document.getElementById('dash-muscle').textContent = bioData.muscleMass.toFixed(1);
+      }
+
+      const todayDiet = allData.filter(d => d.type === 'diet' && d.userId === currentUser.userId && d.date === today);
+      const totalCals = todayDiet.reduce((sum, d) => sum + (d.calories || 0), 0);
+      document.getElementById('dash-calories').textContent = totalCals;
+      
+      const goalData = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+      document.getElementById('dash-goal-calories').textContent = goalData?.goalCalories || 0;
+
+      const todayWorkouts = allData.filter(d => d.type === 'workout' && d.userId === currentUser.userId && d.date === today);
+      const workoutDiv = document.getElementById('dash-workout-today');
+      if (todayWorkouts.length > 0) {
+        workoutDiv.innerHTML = todayWorkouts.map(w => `
+          <div class="p-3 bg-white/5 rounded-lg">
+            <p class="font-semibold">${w.exerciseName}</p>
+            <p class="text-sm text-gray-400">${w.sets}x${w.reps} - ${w.load}kg${w.duration ? ` • ${w.duration}min` : ''}</p>
+          </div>
+        `).join('');
+      }
+
+      if (goalData) {
+        const goalsDiv = document.getElementById('dash-goals');
+        const goals = [];
+        if (goalData.goalWeight > 0) goals.push(`Peso: ${goalData.goalWeight}kg`);
+        if (goalData.goalBodyFat > 0) goals.push(`Gordura: ${goalData.goalBodyFat}%`);
+        if (goalData.goalMuscleMass > 0) goals.push(`Músculo: ${goalData.goalMuscleMass}kg`);
+        
+        if (goals.length > 0) {
+          goalsDiv.innerHTML = goals.map(g => `
+            <div class="p-3 bg-white/5 rounded-lg">
+              <p class="text-sm">${g}</p>
+            </div>
+          `).join('');
+        }
+      }
+
+      updateEvolutionChart();
+    }
+
+    function updateEvolutionChart() {
+      const bioHistory = allData.filter(d => d.type === 'bioimpedance' && d.userId === currentUser.userId)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      const ctx = document.getElementById('evolution-chart');
+      if (!ctx) return;
+      
+      if (evolutionChart) {
+        evolutionChart.destroy();
+      }
+
+      const dates = bioHistory.map(d => new Date(d.date).toLocaleDateString('pt-BR'));
+      const weights = bioHistory.map(d => d.weight);
+      const bodyFats = bioHistory.map(d => d.bodyFat);
+      const muscles = bioHistory.map(d => d.muscleMass);
+
+      evolutionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: 'Peso (kg)',
+              data: weights,
+              borderColor: 'rgb(147, 51, 234)',
+              backgroundColor: 'rgba(147, 51, 234, 0.1)',
+              tension: 0.4
+            },
+            {
+              label: 'Gordura (%)',
+              data: bodyFats,
+              borderColor: 'rgb(236, 72, 153)',
+              backgroundColor: 'rgba(236, 72, 153, 0.1)',
+              tension: 0.4
+            },
+            {
+              label: 'Músculo (kg)',
+              data: muscles,
+              borderColor: 'rgb(59, 130, 246)',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              labels: { color: '#fff' }
+            }
+          },
+          scales: {
+            x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+            y: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+          }
+        }
+      });
+    }
+
+    // Bioimpedance Form
+    document.getElementById('bioimpedance-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const bioData = {
+        weight: parseFloat(document.getElementById('bio-weight').value),
+        bodyFat: parseFloat(document.getElementById('bio-bodyfat').value),
+        muscleMass: parseFloat(document.getElementById('bio-muscle').value),
+        leanMass: parseFloat(document.getElementById('bio-lean').value),
+        boneMass: parseFloat(document.getElementById('bio-bone').value),
+        tmb: parseInt(document.getElementById('bio-tmb').value),
+        metabolicAge: parseInt(document.getElementById('bio-metage').value),
+        visceralFat: parseFloat(document.getElementById('bio-visceral').value),
+        waterPercent: parseFloat(document.getElementById('bio-water').value)
+      };
+
+      const result = await window.dataSdk.create({
+        id: `bio-${Date.now()}`,
+        type: 'bioimpedance',
+        userId: currentUser.userId,
+        date: new Date().toISOString(),
+        weight: bioData.weight,
+        bodyFat: bioData.bodyFat,
+        muscleMass: bioData.muscleMass,
+        leanMass: bioData.leanMass,
+        boneMass: bioData.boneMass,
+        tmb: bioData.tmb,
+        metabolicAge: bioData.metabolicAge,
+        visceralFat: bioData.visceralFat,
+        waterPercent: bioData.waterPercent,
+        name: '',
+        email: '',
+        password: '',
+        height: 0,
+        age: 0,
+        gender: '',
+        goalWeight: 0,
+        goalBodyFat: 0,
+        goalMuscleMass: 0,
+        goalCalories: 0,
+        goalWater: 0,
+        goalWorkoutsPerWeek: 0,
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        waterIntake: 0,
+        workoutName: '',
+        completed: false
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Salvar Medição';
+
+      if (result.isOk) {
+        e.target.reset();
+        loadBioHistory();
+        
+        const recommendations = calculateRecommendations(bioData);
+        showRecommendationsModal(recommendations, bioData);
+      }
+    });
+
+    function loadBioHistory() {
+      const bioHistory = allData.filter(d => d.type === 'bioimpedance' && d.userId === currentUser.userId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      const container = document.getElementById('bio-history');
+      if (bioHistory.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">Nenhuma medição registrada</p>';
+        return;
+      }
+
+      container.innerHTML = bioHistory.map(bio => `
+        <div class="glass-effect rounded-xl p-4 border border-purple-500/20">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-semibold">${new Date(bio.date).toLocaleDateString('pt-BR')}</span>
+            <button class="delete-bio-btn px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm" data-id="${bio.__backendId}">
+              Excluir
+            </button>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <p class="text-gray-400">Peso</p>
+              <p class="font-bold">${bio.weight} kg</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Gordura</p>
+              <p class="font-bold">${bio.bodyFat}%</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Músculo</p>
+              <p class="font-bold">${bio.muscleMass} kg</p>
+            </div>
+            <div>
+              <p class="text-gray-400">TMB</p>
+              <p class="font-bold">${bio.tmb} kcal</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Idade Met.</p>
+              <p class="font-bold">${bio.metabolicAge} anos</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Água</p>
+              <p class="font-bold">${bio.waterPercent}%</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.delete-bio-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const record = allData.find(d => d.__backendId === id);
+          if (record) {
+            btn.disabled = true;
+            btn.textContent = '...';
+            await window.dataSdk.delete(record);
+          }
+        });
+      });
+    }
+
+    // Workout Form
+    document.getElementById('workout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const result = await window.dataSdk.create({
+        id: `workout-${Date.now()}`,
+        type: 'workout',
+        userId: currentUser.userId,
+        date: new Date().toISOString(),
+        workoutName: document.getElementById('workout-name').value,
+        exerciseName: document.getElementById('exercise-name').value,
+        muscleGroup: document.getElementById('muscle-group').value,
+        sets: parseInt(document.getElementById('sets').value),
+        reps: parseInt(document.getElementById('reps').value),
+        load: parseFloat(document.getElementById('load').value),
+        duration: parseInt(document.getElementById('duration').value) || 0,
+        notes: document.getElementById('exercise-notes').value,
+        name: '',
+        email: '',
+        password: '',
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        goalWeight: 0,
+        goalBodyFat: 0,
+        goalMuscleMass: 0,
+        goalCalories: 0,
+        goalWater: 0,
+        goalWorkoutsPerWeek: 0,
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        waterIntake: 0,
+        completed: false
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Adicionar Exercício';
+
+      if (result.isOk) {
+        e.target.reset();
+        loadWorkoutList();
+      }
+    });
+
+    function loadWorkoutList() {
+      const workouts = allData.filter(d => d.type === 'workout' && d.userId === currentUser.userId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      const container = document.getElementById('workout-list');
+      if (workouts.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">Nenhum exercício cadastrado</p>';
+        return;
+      }
+
+      const grouped = {};
+      workouts.forEach(w => {
+        if (!grouped[w.workoutName]) grouped[w.workoutName] = [];
+        grouped[w.workoutName].push(w);
+      });
+
+      container.innerHTML = Object.keys(grouped).map(workoutName => `
+        <div class="glass-effect rounded-xl p-5 border border-purple-500/20">
+          <h4 class="font-bold text-lg mb-3">${workoutName}</h4>
+          <div class="space-y-2">
+            ${grouped[workoutName].map(ex => `
+              <div class="bg-white/5 rounded-lg p-3">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="font-semibold">${ex.exerciseName}</p>
+                    <p class="text-sm text-gray-400">${ex.muscleGroup} • ${ex.sets}x${ex.reps} • ${ex.load}kg${ex.duration > 0 ? ` • ${ex.duration}min` : ''}</p>
+                    ${ex.notes ? `<p class="text-xs text-gray-500 mt-1">${ex.notes}</p>` : ''}
+                  </div>
+                  <button class="delete-workout-btn ml-3 px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm" data-id="${ex.__backendId}">
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.delete-workout-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const record = allData.find(d => d.__backendId === id);
+          if (record) {
+            btn.disabled = true;
+            btn.textContent = '...';
+            await window.dataSdk.delete(record);
+          }
+        });
+      });
+      
+      renderWorkoutCalendar();
+    }
+
+    // Diet Form
+    document.getElementById('diet-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const result = await window.dataSdk.create({
+        id: `diet-${Date.now()}`,
+        type: 'diet',
+        userId: currentUser.userId,
+        date: new Date().toISOString().split('T')[0],
+        foodName: document.getElementById('food-name').value,
+        quantity: parseFloat(document.getElementById('food-quantity').value),
+        unit: document.getElementById('food-unit').value,
+        calories: parseInt(document.getElementById('food-calories').value),
+        name: '',
+        email: '',
+        password: '',
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        goalWeight: 0,
+        goalBodyFat: 0,
+        goalMuscleMass: 0,
+        goalCalories: 0,
+        goalWater: 0,
+        goalWorkoutsPerWeek: 0,
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        waterIntake: 0,
+        workoutName: '',
+        completed: false
+      });
+
+      btn.disabled = false;
+      btn.textContent = 'Registrar Alimento';
+
+      if (result.isOk) {
+        e.target.reset();
+        loadDietList();
+      }
+    });
+
+    function loadDietList() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayDiet = allData.filter(d => d.type === 'diet' && d.userId === currentUser.userId && d.date === today);
+      
+      const container = document.getElementById('diet-list');
+      const totalCals = todayDiet.reduce((sum, d) => sum + (d.calories || 0), 0);
+      
+      document.getElementById('total-calories').textContent = totalCals;
+
+      const goalData = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+      const goalCals = goalData?.goalCalories || 0;
+      document.getElementById('goal-calories-diet').textContent = goalCals;
+
+      const statusDiv = document.getElementById('calorie-status');
+      if (goalCals > 0) {
+        if (totalCals >= goalCals) {
+          statusDiv.className = 'p-4 rounded-xl text-center font-semibold gradient-success';
+          statusDiv.textContent = '✅ Meta Atingida!';
+        } else {
+          const remaining = goalCals - totalCals;
+          statusDiv.className = 'p-4 rounded-xl text-center font-semibold bg-yellow-500/20';
+          statusDiv.textContent = `Faltam ${remaining} calorias`;
+        }
+      }
+
+      if (todayDiet.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">Nenhuma refeição registrada hoje</p>';
+      } else {
+        container.innerHTML = todayDiet.map(food => `
+          <div class="bg-white/5 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p class="font-semibold">${food.foodName}</p>
+              <p class="text-sm text-gray-400">${food.quantity}${food.unit} • ${food.calories} kcal</p>
+            </div>
+            <button class="delete-diet-btn px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm" data-id="${food.__backendId}">
+              Excluir
+            </button>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.delete-diet-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const record = allData.find(d => d.__backendId === id);
+            if (record) {
+              btn.disabled = true;
+              btn.textContent = '...';
+              await window.dataSdk.delete(record);
+            }
+          });
+        });
+      }
+      
+      // Load diet plan
+      const dietPlan = allData.filter(d => d.type === 'diet-plan' && d.userId === currentUser.userId);
+      const planContainer = document.getElementById('diet-plan-list');
+      
+      if (dietPlan.length === 0) {
+        planContainer.innerHTML = '<p class="text-gray-400">Nenhum plano alimentar gerado</p>';
+      } else {
+        planContainer.innerHTML = dietPlan.map(meal => `
+          <div class="bg-white/5 rounded-lg p-3 flex items-center justify-between">
+            <div class="flex-1">
+              <p class="font-semibold text-purple-400">${meal.foodName}</p>
+              <p class="text-sm text-gray-400">${meal.calories} kcal</p>
+              ${meal.notes ? `<p class="text-xs text-gray-500 mt-1">${meal.notes}</p>` : ''}
+            </div>
+            <button class="delete-diet-plan-btn px-3 py-1 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm" data-id="${meal.__backendId}">
+              Excluir
+            </button>
+          </div>
+        `).join('');
+
+        planContainer.querySelectorAll('.delete-diet-plan-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const record = allData.find(d => d.__backendId === id);
+            if (record) {
+              btn.disabled = true;
+              btn.textContent = '...';
+              await window.dataSdk.delete(record);
+            }
+          });
+        });
+      }
+      
+      renderCalendar();
+    }
+    
+    // Clear diet plan
+    document.addEventListener('click', async (e) => {
+      if (e.target.classList && (e.target.classList.contains('clear-diet-plan') || e.target.closest('.clear-diet-plan'))) {
+        const dietPlanItems = allData.filter(d => d.type === 'diet-plan' && d.userId === currentUser.userId);
+        if (dietPlanItems.length > 0) {
+          const btn = e.target.closest('.clear-diet-plan') || e.target;
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = 'Limpando...';
+          for (const item of dietPlanItems) {
+            await window.dataSdk.delete(item);
+          }
+          btn.disabled = false;
+          btn.textContent = originalText || 'Limpar Plano';
+        }
+      }
+    });
+
+    // Goals Form
+    document.getElementById('goals-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Salvando...';
+
+      const existingGoals = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+      
+      const goalData = {
+        id: existingGoals?.id || `goals-${Date.now()}`,
+        type: 'goals',
+        userId: currentUser.userId,
+        date: new Date().toISOString(),
+        goalWeight: parseFloat(document.getElementById('goal-weight').value) || 0,
+        goalBodyFat: parseFloat(document.getElementById('goal-bodyfat').value) || 0,
+        goalMuscleMass: parseFloat(document.getElementById('goal-muscle').value) || 0,
+        goalCalories: parseInt(document.getElementById('goal-calories-input').value) || 0,
+        goalWorkoutsPerWeek: parseInt(document.getElementById('goal-workouts').value) || 0,
+        goalWater: parseFloat(document.getElementById('goal-water').value) || 0,
+        name: '',
+        email: '',
+        password: '',
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        waterIntake: 0,
+        workoutName: '',
+        completed: false
+      };
+
+      let result;
+      if (existingGoals) {
+        result = await window.dataSdk.update({ ...existingGoals, ...goalData });
+      } else {
+        result = await window.dataSdk.create(goalData);
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Salvar Metas';
+
+      if (result.isOk) {
+        loadGoalsStatus();
+      }
+    });
+
+    function loadGoalsStatus() {
+      const goalData = allData.find(d => d.type === 'goals' && d.userId === currentUser.userId);
+      const latestBio = allData.filter(d => d.type === 'bioimpedance' && d.userId === currentUser.userId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      
+      const container = document.getElementById('goals-status');
+      
+      if (!goalData) {
+        container.innerHTML = '<p class="text-gray-400">Nenhuma meta definida</p>';
+        return;
+      }
+
+      document.getElementById('goal-weight').value = goalData.goalWeight || '';
+      document.getElementById('goal-bodyfat').value = goalData.goalBodyFat || '';
+      document.getElementById('goal-muscle').value = goalData.goalMuscleMass || '';
+      document.getElementById('goal-calories-input').value = goalData.goalCalories || '';
+      document.getElementById('goal-workouts').value = goalData.goalWorkoutsPerWeek || '';
+      document.getElementById('goal-water').value = goalData.goalWater || '';
+
+      const goals = [];
+      
+      if (goalData.goalWeight > 0 && latestBio) {
+        const diff = latestBio.weight - goalData.goalWeight;
+        const status = Math.abs(diff) < 1 ? '✅' : diff > 0 ? '🔽' : '🔼';
+        goals.push({
+          label: 'Peso',
+          current: latestBio.weight.toFixed(1),
+          goal: goalData.goalWeight.toFixed(1),
+          unit: 'kg',
+          status
+        });
+      }
+
+      if (goalData.goalBodyFat > 0 && latestBio) {
+        const diff = latestBio.bodyFat - goalData.goalBodyFat;
+        const status = Math.abs(diff) < 1 ? '✅' : diff > 0 ? '🔽' : '🔼';
+        goals.push({
+          label: 'Gordura',
+          current: latestBio.bodyFat.toFixed(1),
+          goal: goalData.goalBodyFat.toFixed(1),
+          unit: '%',
+          status
+        });
+      }
+
+      if (goalData.goalMuscleMass > 0 && latestBio) {
+        const diff = latestBio.muscleMass - goalData.goalMuscleMass;
+        const status = Math.abs(diff) < 1 ? '✅' : diff < 0 ? '🔼' : '🔽';
+        goals.push({
+          label: 'Músculo',
+          current: latestBio.muscleMass.toFixed(1),
+          goal: goalData.goalMuscleMass.toFixed(1),
+          unit: 'kg',
+          status
+        });
+      }
+
+      if (goalData.goalWater > 0) {
+        document.getElementById('water-goal').textContent = goalData.goalWater;
+      }
+
+      if (goals.length === 0) {
+        container.innerHTML = '<p class="text-gray-400">Defina suas metas acima</p>';
+        return;
+      }
+
+      container.innerHTML = goals.map(g => `
+        <div class="glass-effect rounded-xl p-4 border border-purple-500/20">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold">${g.label}</span>
+            <span class="text-2xl">${g.status}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Atual</p>
+              <p class="text-xl font-bold">${g.current} ${g.unit}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-400">Meta</p>
+              <p class="text-xl font-bold text-purple-400">${g.goal} ${g.unit}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Water Tracking
+    let waterIntake = 0;
+    
+    document.querySelectorAll('.water-add-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const amount = parseFloat(btn.dataset.amount);
+        waterIntake += amount;
+        updateWaterProgress();
+        await saveWaterData();
+      });
+    });
+
+    document.getElementById('water-reset-btn').addEventListener('click', async () => {
+      waterIntake = 0;
+      updateWaterProgress();
+      await saveWaterData();
+    });
+
+    function updateWaterProgress() {
+      const goal = parseFloat(document.getElementById('water-goal').textContent) || 3;
+      const percent = Math.min((waterIntake / goal) * 100, 100);
+      document.getElementById('water-current').textContent = waterIntake.toFixed(1);
+      document.getElementById('water-progress').style.width = percent + '%';
+      document.getElementById('water-percent').textContent = Math.round(percent) + '%';
+    }
+
+    async function saveWaterData() {
+      if (!currentUser) return;
+      
+      const today = new Date().toISOString().split('T')[0];
+      const existing = allData.find(d => d.type === 'water' && d.userId === currentUser.userId && d.date === today);
+      
+      const waterData = {
+        id: existing?.id || `water-${Date.now()}`,
+        type: 'water',
+        userId: currentUser.userId,
+        date: today,
+        waterIntake: waterIntake,
+        name: '',
+        email: '',
+        password: '',
+        weight: 0,
+        bodyFat: 0,
+        muscleMass: 0,
+        leanMass: 0,
+        boneMass: 0,
+        tmb: 0,
+        metabolicAge: 0,
+        visceralFat: 0,
+        waterPercent: 0,
+        height: 0,
+        age: 0,
+        gender: '',
+        goalWeight: 0,
+        goalBodyFat: 0,
+        goalMuscleMass: 0,
+        goalCalories: 0,
+        goalWater: 0,
+        goalWorkoutsPerWeek: 0,
+        exerciseName: '',
+        muscleGroup: '',
+        sets: 0,
+        reps: 0,
+        load: 0,
+        duration: 0,
+        notes: '',
+        foodName: '',
+        quantity: 0,
+        unit: '',
+        calories: 0,
+        workoutName: '',
+        completed: false
+      };
+
+      if (existing) {
+        await window.dataSdk.update({ ...existing, ...waterData });
+      } else {
+        await window.dataSdk.create(waterData);
+      }
+    }
+
+    function loadWaterData() {
+      const today = new Date().toISOString().split('T')[0];
+      const todayWater = allData.find(d => d.type === 'water' && d.userId === currentUser.userId && d.date === today);
+      
+      if (todayWater) {
+        waterIntake = todayWater.waterIntake || 0;
+        updateWaterProgress();
+      }
+    }
+
+    // Data Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        
+        if (currentUser) {
+          loadDashboard();
+          loadBioHistory();
+          loadWorkoutList();
+          loadDietList();
+          loadGoalsStatus();
+          loadWaterData();
+        }
+      }
+    };
+
+    // Config Management
+    async function onConfigChange(config) {
+      currentConfig = config;
+      document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
+      
+      const welcomeTitleElements = document.querySelectorAll('#welcome-title');
+      welcomeTitleElements.forEach(el => {
+        el.textContent = config.welcome_title || defaultConfig.welcome_title;
+      });
+      
+      const dashboardTitleElement = document.getElementById('dashboard-title');
+      if (dashboardTitleElement) {
+        dashboardTitleElement.textContent = config.dashboard_title || defaultConfig.dashboard_title;
+      }
+    }
+
+    // Initialize
+    async function initApp() {
+      if (window.dataSdk) {
+        await window.dataSdk.init(dataHandler);
+      }
+      
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['app_title', config.app_title || defaultConfig.app_title],
+            ['welcome_title', config.welcome_title || defaultConfig.welcome_title],
+            ['dashboard_title', config.dashboard_title || defaultConfig.dashboard_title]
+          ])
+        });
+      }
+    }
+
+    initApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b9f12eae6825e0f',t:'MTc2Nzc0Mjk2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
