@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Versão deploy pronta para GitHub Pages - Treinos do Rafael.">
+  <meta name="theme-color" content="#764ba2">
+  <title>Treinos do Rafael — Deploy</title>
+  <base href="./">
+  <script defer src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SDKs locais (placeholders) -->
+  <script defer src="_sdk/data_sdk.js"></script>
+  <script defer src="_sdk/element_sdk.js"></script>
+  <style>
+    body { box-sizing: border-box; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+    * { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif; }
+    .glass-effect { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+    .gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-hover { transition: all 0.3s ease; }
+  </style>
+ </head>
+ <body class="h-full w-full overflow-auto bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+  <div class="max-w-4xl mx-auto p-8 text-center">
+    <h1 class="text-5xl font-bold mb-4">Treinos do Rafael</h1>
+    <p class="text-lg text-gray-300 mb-6">Versão para publicação em GitHub Pages. Alguns recursos que dependem de backend foram substituídos por placeholders.</p>
+    <div class="glass-effect rounded-xl p-6">
+      <p class="mb-4">Abra a aplicação principal:</p>
+      <a class="inline-block px-6 py-3 gradient-primary rounded-xl font-bold hover:scale-105 transition-all" href="../index.html">Abrir Aplicação</a>
+    </div>
+    <p class="mt-6 text-sm text-gray-400">Página gerada automaticamente para facilitar deploy.</p>
+  </div>
+ </body>
+</html>
